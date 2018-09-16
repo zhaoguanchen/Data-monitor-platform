@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bitauto.modules.item.dao.ItemDao">
+	<resultMap id="itemResultMap" type="com.bitauto.modules.item.entity.ItemBody">
+		<result column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="parentid" property="parentId"/>
+		<result column="creater" property="creater"/>
+		<result column="remark" property="remark"/>
+	</resultMap>
+
+	<select id="queryAllItems" resultMap="itemResultMap">
+		select * from item_module_list
+		<where> parentid!=0 and statu=0
+			<if test="itemID!= null and itemID.trim()!= ''">
+				and parentid =#{itemID}
+			</if>
+			<if test="module_name!= null and module_name.trim()!= ''">
+				and name like concat('%', #{module_name}, '%')
+			</if>
+		</where>
+		<if test="offset != null and limit != null ">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="getAllItemT" resultMap="itemResultMap">
+		SELECT * from item_module_list where id in (
+select itemid from item_table_relation group by itemid ) and parentid=0
+	</select>
+
+	<select id="getAllModuleT" resultMap="itemResultMap">
+		SELECT * from item_module_list where id in (
+select itemid from item_table_relation group by itemid ) and parentid!=0 and parentid=#{parentid}
+	</select>
+
+	<select id="getAllItemC" resultMap="itemResultMap">
+		SELECT * from item_module_list where id in (
+		select itemid from item_column_relation group by itemid ) and parentid=0
+	</select>
+
+	<select id="getAllModuleC" resultMap="itemResultMap">
+		SELECT * from item_module_list where id in (
+		select itemid from item_column_relation group by itemid ) and parentid!=0 and parentid=#{parentid}
+	</select>
+
+	<select id="getTotal" resultType="int">
+		select count(*) from item_module_list where parentid=#{parentid}
+	</select>
+
+	<select id="queryAllItemName" resultMap="itemResultMap">
+		select * from item_module_list where parentid=0
+		<if test="itemIds!=null and itemIds.size()!=0">
+			and id in
+			<foreach item="itemId" collection="itemIds" open="(" separator="," close=")">
+				#{itemId}
+			</foreach>
+		</if>
+	</select>
+
+	<select id="queryItemByTableId" resultType="int">
+		select itemid from item_table_relation where tableid=#{tid}
+	</select>
+	<select id="queryItemByColumnId" resultType="int">
+		select itemid from item_column_relation where columnid=#{cid}
+	</select>
+	<select id="queryAllModuleName" resultMap="itemResultMap">
+		select id,name from item_module_list where parentid =#{parentId}
+	</select>
+
+	<select id="queryItemNameByItemId" resultType="string">
+		select name from item_module_list where id=#{id}
+	</select>
+
+	<select id="queryItemIdByItemName" resultType="int">
+		select id from item_module_list where name like concat('%', #{itemName}, '%')
+	</select>
+
+	<select id="queryTableId" resultType="string">
+	select tableid from item_table_relation where itemid=#{id}
+	</select>
+
+	<select id="queryColumnId" resultType="string">
+		select columnid from item_column_relation where itemid=#{id}
+	</select>
+
+	<select id="queryItemByItemId" resultMap="itemResultMap">
+		select * from item_module_list where id=#{itemId}
+	</select>
+
+	<update id="updateItem" >
+		update item_module_list
+		<set>
+			<if test="name!= null">`name` = #{name},</if>
+			<if test="remark != null">`remark` = #{remark}</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<update id="updateStatu" >
+		update item_module_list set statu=1 where id = #{id}
+	</update>
+
+	<insert id="insertModuleList">
+		insert into item_module_list(name,parentid,creater,remark) values(#{name},#{parentId},#{creater},#{remark})
+	</insert>
+	<insert id="insertTableRelation">
+		insert into item_table_relation(itemid,tableid) values(#{itemId},#{tableId})
+	</insert>
+
+	<insert id="insertColumnRelation">
+		insert into item_column_relation(itemid,columnid) values(#{itemId},#{columnId})
+	</insert>
+
+	<delete id="deleteTableRelation" parameterType="int">
+		delete from item_table_relation where tableid in
+		<foreach item="tid" collection="array" open="(" separator="," close=")">
+			#{tid}
+		</foreach>
+	</delete>
+
+	<delete id="deleteColumnRelation" parameterType="int">
+		delete from item_column_relation where columnid in
+		<foreach item="tid" collection="array" open="(" separator="," close=")">
+			#{tid}
+		</foreach>
+	</delete>
+	<!--<insert id="insertTRuler">-->
+	<!--insert into table_rule_db-->
+	<!--(	 tid,-->
+	<!--username,-->
+	<!--monitor_time)-->
+	<!--values(-->
+	<!--REPLACE(UUID(),"-",""),-->
+	<!--#{monitor_time})-->
+	<!--</insert>-->
+
+	<!--<update id="updateTRuler" >-->
+	<!--update table_rule_db-->
+	<!--<set>-->
+	<!--<if test="monitor_time != null">`monitor_time` = #{monitor_time},</if>-->
+	<!--<if test="create_time != null">`create_time` = #{create_time}</if>-->
+	<!--</set>-->
+	<!--where tid = #{tId}-->
+	<!--</update>-->
+
+	<!--<delete id="deleteTRuler" parameterType="int">-->
+	<!--delete from table_rule_db where tid in-->
+	<!--<foreach item="tid" collection="array" open="(" separator="," close=")">-->
+	<!--#{tid}-->
+	<!--</foreach>-->
+	<!--</delete>-->
+
+
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bitauto.modules.moduleitem.dao.ModuleDao">
+	<resultMap id="tableResultMap" type="com.bitauto.modules.item.entity.TableRelation">
+		<result column="id" property="id"/>
+		<result column="itemid" property="itemId"/>
+		<result column="tableid" property="tableId"/>
+	</resultMap>
+
+	<select id="queryTableId" resultMap="tableResultMap">
+		select tableid from item_table_relation where itemid=#{id}
+	</select>
+
+</mapper>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bitauto.modules.column.dao.ColumnDao">
+	<resultMap id="columnResultMap" type="com.bitauto.modules.column.entity.ColumnRuler">
+		<!--//`id` int(11) NOT NULL, 		//字段id-->
+		<!--//  `cmonitor_type` varchar(20) NOT NULL,  	//监测类型-->
+		<!--//  `ccondition` varchar(200) NOT NULL,		//过滤条件-->
+		<!--//  `ctable_name` varchar(100) NOT NULL,		//表名称-->
+		<!--//  `column_name` varchar(100) NOT NULL,		//字段名称-->
+		<!--//  `cdatabase_name` varchar(50) NOT NULL,		//数据库名称-->
+		<!--//  `calculate_type` varchar(50) NOT NULL,	//预测类型-->
+		<!--//  `deviation` varchar(50) NOT NULL,		//误差-->
+		<!--//  `ch_compare` varchar(100) default NULL,	//日环比规则范围-->
+		<!--//            `ct_compare` varchar(100) default NULL,	//周环比规则范围-->
+		<!--//            `cself` varchar(100) default NULL,		//自身比规则范围-->
+		<!--//            `day_increment` varchar(100) default NULL,	//日增量规则范围-->
+		<!--//            `calarm_type` varchar(20) NOT NULL,		//报警方式-->
+		<!--//  `cremark` varchar(100) NOT NULL,		//注释-->
+		<!--//  `cowner` varchar(50) NOT NULL,			//负责人-->
+		<!--//  `ccontent` varchar(100) NOT NULL,		//通知内容-->
+		<!--//  `creciever` varchar(100) NOT NULL,		//接收人-->
+		<!--//  `ccreate_time` datetime NOT NULL		//创建时间-->
+		<result column="id" property="cid"/>
+		<result column="cid" property="id"/>
+		<result column="number" property="number"/>
+		<result column="monitor_type" property="cmonitor_type"/>
+		<result column="aggregate_function" property="aggregate_function"/>
+		<!--<result column="ccondition" property="ccondition"/>-->
+		<result column="table_name" property="ctable_name"/>
+		<result column="column_name" property="column_name"/>
+		<result column="database_name" property="cdatabase_name"/>
+		<result column="calculate_type" property="calculate_type"/>
+		<result column="count_type" property="count_type"/>
+		<result column="deviation" property="deviation"/>
+		<result column="h_compare" property="ch_compare"/>
+		<result column="t_compare" property="ct_compare"/>
+		<result column="self" property="cself"/>
+		<result column="day_increment" property="day_increment"/>
+		<result column="alarm_type" property="calarm_type"/>
+		<result column="remark" property="cremark"/>
+		<result column="cowner" property="cowner"/>
+		<result column="content" property="ccontent"/>
+		<result column="reciever" property="creciever"/>
+		<result column="username" property="username"/>
+		<result column="create_time" property="ccreate_time"/>
+		<result column="partition_type" property="partition_type"/>
+		<result column="check_day" property="create_partition_time"/>
+		<result column="alarm_group" property="alarmGroup"/>
+		<result column="alarm_man" property="alarmman"/>
+		<result column="status" property="status"/>
+		<result column="alarm_uniqueid" property="alarmUniqueid"/>
+	</resultMap>
+	<select id="queryAllColumentRulers" resultMap="columnResultMap">
+		select * from column_rule_db
+		<where> 1=1
+			<if test="cDatabaseName != null and cDatabaseName.trim() != ''">
+				and database_name = #{cDatabaseName}
+			</if>
+			<if test="cid != null and cid.trim() != ''">
+				and number = #{cid}
+			</if>
+			<if test="ctable_name != null and ctable_name.trim() != ''">
+				and table_name like concat('%', #{ctable_name}, '%')
+			</if>
+			<if test="cowner != null and cowner.trim() != ''">
+				and cowner=#{cowner}
+			</if>
+			<if test="tableid!=null ">
+				and id in
+				<foreach item="tableids" collection="tableid" open="(" separator="," close=")">
+					#{tableids}
+				</foreach>
+			</if>
+		</where>
+		order by create_time DESC
+		<if test="offset != null and limit != null ">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="queryIncrementID" resultType="int">
+		select cid from column_rule_db where id=#{cid}
+	</select>
+
+	<select id="queryCRulerByDbNameAndTblName" resultMap="columnResultMap">
+		select * from column_rule_db where database_name=#{dbName} and table_name=#{tblName}
+	</select>
+
+	<select id="getTotal" resultType="int">
+		select count(*) from column_rule_db
+	</select>
+	<select id="queryCOwner" resultType="String">
+		select cowner from column_rule_db group by cowner
+	</select>
+
+	<select id="queryCDbName" resultType="String">
+		select database_name from column_rule_db group by database_name
+	</select>
+	<select id="queryCRulerById" resultMap="columnResultMap">
+		select * from column_rule_db where id=#{id}
+	</select>
+
+	<insert id="insertCRuler">
+		insert into column_rule_db
+		(	 id,
+		monitor_type,
+		aggregate_function,
+		ccondition,
+		table_name,
+		column_name,
+		database_name,
+		calculate_type,
+		count_type,
+		deviation,
+		h_compare,
+		t_compare,
+		self,
+		day_increment,
+		alarm_type,
+		remark,
+		cowner,
+		content,
+		reciever,
+		username,
+		check_day,
+		partition_type,
+		alarm_group,
+		alarm_man,
+		create_time,
+		alarm_uniqueid)
+		values(
+		#{cid},
+		#{cmonitor_type},
+		#{aggregate_function},
+		#{ccondition},
+		#{ctable_name},
+		#{column_name},
+		#{cdatabase_name},
+		#{calculate_type},
+		#{count_type},
+		#{deviation},
+		#{ch_compare},
+		#{ct_compare},
+		#{cself},
+		#{day_increment},
+		#{calarm_type},
+		#{cremark},
+		#{cowner},
+		#{ccontent},
+		#{creciever},
+		#{username},
+		#{create_partition_time},
+		#{partition_type},
+		#{alarmGroup},
+		#{alarmman},
+		SYSDATE(),
+		#{alarmUniqueid})
+	</insert>
+
+	<update id="updateNumber">
+		update column_rule_db set `number`=#{number} where id=#{cid}
+	</update>
+
+	<update id="updateCRuler" >
+		update column_rule_db
+		<set>
+			<if test="cmonitor_type != null">`monitor_type` = #{cmonitor_type}, </if>
+			<if test="aggregate_function != null">`aggregate_function` = #{aggregate_function}, </if>
+			<if test="ccondition != null">`ccondition` = #{ccondition}, </if>
+			<if test="ctable_name != null">`table_name` = #{ctable_name}, </if>
+			<if test="column_name != null">`column_name` = #{column_name}, </if>
+			<if test="cdatabase_name != null">`database_name` = #{cdatabase_name}, </if>
+			<if test="calculate_type != null">`calculate_type` = #{calculate_type},</if>
+			<if test="count_type != null">`count_type` = #{count_type},</if>
+			<if test="deviation != null">`deviation` = #{deviation},</if>
+			<if test="ch_compare != null">`h_compare` = #{ch_compare},</if>
+			<if test="ct_compare != null">`t_compare` = #{ct_compare},</if>
+			<if test="cself != null">`self` = #{cself},</if>
+			<if test="day_increment != null">`day_increment` = #{day_increment},</if>
+			<if test="calarm_type != null">`alarm_type` = #{calarm_type},</if>
+			<if test="cremark != null">`remark` = #{cremark},</if>
+			<if test="cowner != null">`cowner` = #{cowner},</if>
+			<if test="ccontent != null">`content` = #{ccontent},</if>
+			<if test="creciever != null">`reciever` = #{creciever},</if>
+			<if test="username != null">`reciever` = #{creciever},</if>
+			<if test="ccreate_time != null">`create_time` = #{ccreate_time},</if>
+			<if test="partition_type != null">`partition_type` = #{partition_type},</if>
+			<if test="alarmGroup != null">`alarm_group` = #{alarmGroup},</if>
+			<if test="alarmman != null">`alarm_man` = #{alarmman},</if>
+			<if test="create_partition_time != null">`check_day` = #{create_partition_time},</if>
+			<if test="alarmUniqueid != null">`alarm_uniqueid` = #{alarmUniqueid}</if>
+		</set>
+		where id = #{cid}
+	</update>
+
+	<delete id="deleteCRuler" parameterType="int">
+		delete from column_rule_db where id in
+		<foreach item="ids" collection="array" open="(" separator="," close=")">
+			#{ids}
+		</foreach>
+	</delete>
+
+	<update id="updateStatus">
+    	update column_rule_db set `status`= #{status} where id=#{cid}
+ 	</update>
+
+</mapper>

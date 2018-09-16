@@ -1,0 +1,209 @@
+/* CSS reset */
+html,
+body,
+div,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+pre,
+code,
+form,
+fieldset,
+legend,
+input,
+textarea,
+p,
+blockquote,
+th,
+td,
+em,
+button {
+  margin: 0;
+  padding: 0;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section,
+summary {
+  display: block;
+}
+html {
+  height: 100%;
+}
+img {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  vertical-align: top;
+}
+/*input,*/
+textarea {
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  resize: none;
+  outline: 0;
+  box-shadow: none;
+  -webkit-appearance: none;
+}
+table {
+  border-collapse: collapse;
+}
+a {
+  text-decoration: none;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: normal;
+}
+ul,
+li {
+  list-style: none;
+}
+.form_content {
+  width: 800px;
+  height: auto;
+  margin: 0 auto;
+}
+.form_content .form_section {
+  font-size: 16px;
+  color: #323232;
+  line-height: 30px;
+  height: 30px;
+  margin-bottom: 20px;
+  width: 100%;
+  position: relative;
+  padding-left: 200px;
+}
+.form_content .section_left {
+  width: 200px;
+  float: left;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.form_content .section_left.large {
+  width: 400px;
+}
+.form_content .section_left .gray_tip {
+  color: #666;
+  font-size: 16px;
+}
+.form_content .section_left .glyphicon-plus {
+  background: #1a87e4;
+  color: #fff;
+}
+.form_content .section_left .left_item {
+  display: inline-block;
+  float: left;
+  margin-right: 50px;
+}
+.form_content .checkbox_input {
+  display: inline-block;
+  -webkit-appearance: checkbox;
+}
+.form_content .section_right {
+  width: 100%;
+  height: 100%;
+}
+.form_content .section_right .txt_input {
+  width: 200px;
+  height: 100%;
+  border: 1px solid #ccc;
+  padding: 0 10px;
+  display: inline-block;
+  border-radius: 4px;
+}
+.form_content .section_right .right_label {
+  display: inline-block;
+}
+.form_content .section_right .level_box {
+  display: inline-block;
+}
+.form_content .section_right .level_label {
+  display: inline-block;
+}
+.form_content .section_right .right_item {
+  display: inline-block;
+  float: left;
+  margin-right: 50px;
+}
+
+
+.form_content1 {
+  width: 1000px;
+  height: auto;
+  margin: 0 auto;
+}
+.form_content1 .form_section1 {
+  font-size: 16px;
+  color: #323232;
+  line-height: 40px;
+  height: 40px;
+  margin-bottom: 20px;
+  width: 100%;
+  position: relative;
+  padding-left: 300px;
+}
+.form_content1 .section_left1 {
+  width: 400px;
+  float: left;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.form_content1 .section_right1 {
+  margin-right: 100px;
+  width: 100%;
+  height: 100%;
+}
+.form_content1 .section_right1 .txt_input1 {
+   width: 150px;
+   height: 80%;
+   border: 1px solid #ccc;
+   padding: 0 10px;
+   display: inline-block;
+   border-radius: 4px;
+    margin-right:10px;
+ }
+.form_content1 .section_right1 .right_item1 {
+  display: inline-block;
+  float: left;
+  margin-right: 50px;
+}
+.form_content1 .section_left1 .txt_input1 {
+  width: 150px;
+  height: 32px;
+  border: 1px solid #ccc;
+  padding: 0 10px;
+  display: inline-block;
+  border-radius: 4px;
+}
+.form_content1 .section_left1 .left_item{
+  display: inline-block;
+  float: left;
+  margin-right: 50px;
+}

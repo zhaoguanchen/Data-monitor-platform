@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+<title>定时任务</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<link rel="stylesheet" href="../../css/bootstrap.min.css">
+<link rel="stylesheet" href="../../css/font-awesome.min.css">
+<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+<link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+<link rel="stylesheet" href="../../css/main.css">
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="../../css/main/main.css">
+<script type="text/javascript" src="../../js/jquery.min.js"></script>
+<script src="../../libs/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+	<style>
+		img {
+			vertical-align: middle;
+		}
+		.show-rule {
+			display: block;
+			position: absolute;
+			z-index: 100;
+			background-color:#E8E8E8;
+			border-radius:10px;
+			padding-left:10px;
+			margin-top:5px;
+			padding-right:10px;
+		}
+		.fade-enter-active, .fade-leave-active {
+			transition: opacity .5s;
+		}
+		.fade-enter, .fade-leave-to  {
+			opacity: 0;
+		}
+	</style>
+</head>
+<body>
+<div id="rrapp" v-cloak>
+	<div  v-show="showList" >
+		<div class="grid-btn" style="height:34px;">
+			<div class="form-group col-sm-2">
+				<select id="selects" class="form-control"  @change="getTable()">
+					<option selected="selected">请选择</option>
+					<option v-for="option in dbName" >
+						{{ option}}
+					</option>
+				</select>
+			</div>
+			<div class="form-group col-sm-2">
+				<input type="text" class="form-control" v-model="table_name" @keyup.enter="query" placeholder="表名"/>
+			</div>
+			<a class="btn btn-default" @click="query" style="background: #b4c5ff">查询</a>
+			<!--<a class="btn btn-default" @click="setColumn"style="background: #b4c5ff">设置字段规则</a>-->
+		</div>
+	    <table id="jqGrid"></table>
+	    <div id="jqGridPager"></div>
+	</div>
+	<div id="set">
+		<div  v-show="!showList" class="panel panel-default" >
+			<div class="panel-heading">{{title}}</div>
+			<div class="form_content1">
+				<div class="form_section1">
+					<div class="section_left1" >
+						<div class="left_item1">
+							表&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名：<input type="text" v-model="ETLtable.tblName"  readonly="readonly" class="txt_input1"/>
+						</div>
+					</div>
+					<div class="section_right1">
+						META : <input type="text" class="txt_input1" readonly="readonly"/>&nbsp;库&nbsp;&nbsp;名 ：<input type="text" readonly="readonly" v-model="ETLtable.dbName" class="txt_input1"/>
+					</div>
+				</div>
+				<div class="form_section1">
+					<div class="section_left1" >
+						ETL名称 ：<input type="text" readonly="readonly" v-model="ETLtable.tblName" class="txt_input1"/>
+					</div>
+					<div class="section_right1" v-model="ETLtable.table_name">
+						owner : <input type="text" class="txt_input1" readonly="readonly"  v-model="ETLtable.owner"/>&nbsp;group&nbsp;：<input type="text" readonly="readonly" v-model="ETLtable.owner" class="txt_input1"/>
+					</div>
+				</div>
+				<div class="form_section1">
+					<div class="section_left1" >
+						分&nbsp;区&nbsp;&nbsp;键：&nbsp;<input type="text" readonly="readonly" v-model="ETLtable.partitionKey" class="txt_input1"/>
+					</div>
+					<div class="section_right1">
+						列&nbsp;&nbsp;&nbsp;&nbsp;数 : <input type="text" readonly="readonly" v-model="ETLtable.columnCount" class="txt_input1"/>&nbsp;其   &nbsp;&nbsp;他：<input type="text" readonly="readonly" class="txt_input1"/>
+					</div>
+				</div>
+
+				<div style="font-size: 16px;font-weight: bold">基础配置</div>
+				<div class="form_section1">
+					<div class="section_left1" >
+						时&nbsp;间&nbsp;字&nbsp;段 ：<input type="text" value="dt" readonly="readonly" class="txt_input1"/>
+					</div>
+					<div class="section_right1">
+						时间格式 : <input type="text" placeholder="yyyymmdd" v-model="ETLtable.monitor_time" class="txt_input1"/>&nbsp;监控分组：<input type="text" class="txt_input1"/>
+					</div>
+				</div>
+				<div class="form_section1">
+					<div class="section_left1">
+						报警接收人：<input type="text" v-model="ETLtable.reciver" readonly="readonly" class="txt_input1"/>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label"></div>
+				<input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+			</div>
+		</div>
+	</div>
+
+	<div id="setColumn">
+		<div  v-show="!showList" class="panel panel-default" >
+			<div class="panel-heading">{{title}}</div>
+			<div class="form_content">
+				<div class="form_section">
+					<div class="section_left large">
+						字段监控
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left" >
+						字段名称：
+					</div>
+					<div class="section_right">
+						<select  class="select_component"   v-model="column.column_name">
+							<option v-for="option in columnName" >
+								{{ option}}
+							</option>
+						</select>
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left" >
+						数据库名称：
+					</div>
+					<div class="section_right">
+						<input type="text" v-model="column.cdatabase_name"  class="txt_input">
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left" >
+						表名称：
+					</div>
+					<div class="section_right">
+						<input type="text" v-model="column.ctable_name"  class="txt_input">
+						&nbsp;&nbsp;<input type="button" class="btn btn-primary" @click="queryMessagec" value="查看任务信息"/>
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left" >
+						监控类型：
+					</div>
+					<div class="section_right">
+						<!--id="select" class="select_component"   onchange="show()"-->
+						<select   class="select_component"  onchange="show()" id="select" v-model="monitor" >
+							<option>NULL值</option>
+							<option>SUM值</option>
+							<option>最小值(数字)</option>
+							<option>平均值</option>
+							<option>平均长度</option>
+							<option>最大值(数字)</option>
+							<option>0值的个数</option>
+							<option>空字符串的个数</option>
+							<!--<option>特殊字符</option>-->
+							<option>重复个数</option>
+							<!--<option>指标监控</option>-->
+						</select>
+					</div>
+				</div>
+
+				<div v-show="showItem">
+					<!--//添加项目关系第一个###########-->
+					<div class="form_section">
+						<div class="section_left" >
+							项目模块：
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt1" onchange="setValueItem()" class="select_component"   v-model="item" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select   class="select_component"   v-model="module" >
+								<option v-for="option in moduleName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<a type="button" style="line-height: 30px;height: 30px; " @click="addmodule"><img src="../../swagger/images/1.jpg" style="line-height: 40px;height: 20px; background-color: #c4e3f3"/></a>
+							<a type="button" style="line-height: 30px;height: 30px; " @click="deletemodule"><img src="../../swagger/images/2.jpg" style="line-height: 20px;height: 20px; background-color: #c4e3f3"/></a>
+						</div>
+					</div>
+
+					<!--第二个项目关系-->
+					<div  v-if="countModule>1"  class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt2" onchange="setValueItem1()" class="select_component"   v-model="item1" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module1" >
+								<option v-for="option in moduleName1" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+					<!--第san个项目关系-->
+					<div v-if="countModule>2" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt4" onchange="setValueItem3()" class="select_component"   v-model="item2" >
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module2" >
+								<option v-for="option in moduleName3" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+					<!--第si个项目关系-->
+					<div v-if="countModule>3" class="form_section">
+						<div class="section_left" >
+
+						</div>
+						<div id="selectModule" class="section_right" style="float: left" >
+							<select  id="selt3" onchange="setValueItem2()" class="select_component"   v-model="item3" >
+								<option v-for="option in itemName" v-bind:value="option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module3" >
+								<option v-for="option in moduleName2" v-bind:value="option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第五个项目关系-->
+					<div v-if="countModule>4" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt5" onchange="setValueItem4()" class="select_component"   v-model="item4" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module4" >
+								<option v-for="option in moduleName4" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第六个项目关系-->
+					<div v-if="countModule>5" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt6" onchange="setValueItem5()" class="select_component"   v-model="item5" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module5" >
+								<option v-for="option in moduleName5" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第七个项目关系-->
+					<div v-if="countModule>6" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt7" onchange="setValueItem6()" class="select_component"   v-model="item6" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module6" >
+								<option v-for="option in moduleName6" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第八个项目关系-->
+					<div v-if="countModule>7" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt8" onchange="setValueItem7()" class="select_component"   v-model="item7" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module7" >
+								<option v-for="option in moduleName7" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第九个项目关系-->
+					<div v-if="countModule>8" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt9" onchange="setValueItem8()" class="select_component"   v-model="item8" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module8" >
+								<option v-for="option in moduleName8" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第十个项目关系-->
+					<div v-if="countModule>9" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="selt10" onchange="setValueItem9()" class="select_component"   v-model="item9" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="module9" >
+								<option v-for="option in moduleName9" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+				</div>
+				<!--=============================以下是指标类型的页面代码===========================-->
+				<div v-show="!showCommon">
+					<div class="form_section">
+						<div class="section_left" >
+							聚合函数：
+						</div>
+						<div class="section_right">
+							<select  class="select_component"   v-model="column.aggregate_function" >
+								<option >sum</option>
+								<option >avg</option>
+							</select>
+						</div>
+					</div>
+					<div class="form_section">
+						<div class="section_left" >
+							计算类型：
+						</div>
+
+						<div class="section_right" >
+							<select  class="select_component"   v-model="column.count_type" >
+								<option >动态阈值</option>
+							</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							预测算法：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<select  class="select_component"   v-model="column.calculate_type" >
+							<option >线性回归</option>
+							<!--<option >移动平均</option>-->
+						</select>
+						</div>
+					</div>
+					<div class="form_section">
+						<div class="section_left">
+							<!--<input type="checkbox" class="checkbox_input">-->
+							误差：
+						</div>
+						<div class="section_right">
+							<div class="right_label">
+								值域范围
+								<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left"
+									  title="
+	条件范围类型：
+		•（1,2）-大于1小于2
+		•（0，）-大于0
+		•（，0）-小于0
+		•[-1，1）-大于等于-1小于1
+		•（，1]-小于等于1
+	与或非类型：
+		•！{5}-不等于5
+		•（0,1）|（2，）-大于0小于1或者大于2
+		•（0,2）&（2，）-大于0小于2且大于1"></span>
+								:
+							</div>
+							<input type="text" v-model="column.deviation" class="txt_input">
+							<div class="level_box">
+								<div class="level_label">
+									优先级
+									<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></span>
+									:
+								</div>
+								<span class="right_box">
+							<input type="checkbox" class="checkbox_input">
+							高优先级
+						</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!--=============================以上是指标类型的页面代码===========================-->
+
+
+				<!--=============================以下是普通类型的页面代码===========================-->
+				<div v-show="showCommon">
+					<!--<div class="form_section">-->
+						<!--<div class="section_left">-->
+							<!--计算类型：-->
+						<!--</div>-->
+						<!--<div class="section_right">-->
+							<!--<input type="text" v-model="column.count_type" placeholder="选填" class="txt_input">-->
+						<!--</div>-->
+					<!--</div>-->
+					<!--设置监控周期-->
+					<div class="form_section">
+						<div class="section_left">
+							监控周期：
+						</div>
+						<div class="section_right">
+							<select  class="select_component"  id="setCylec" onchange="setCyclec()" v-model="column.partition_type" >
+								<option value="日" >日监控</option>
+								<option value="月">月监控</option>
+							</select>
+						</div>
+					</div>
+
+					<!--设置本身值-->
+					<div class="form_section">
+						<div class="section_left">
+							<!--<input type="checkbox" class="checkbox_input">-->
+							本身：
+						</div>
+						<div class="section_right">
+							<div class="right_label">
+								值域范围
+								<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left"
+									  style="cursor:pointer;" @mouseover="showText1" @mouseout="hiddenText1"></span>
+								:
+							</div>
+							<transition name="fade">
+								<div v-show="showRule1" class="show-rule">
+									条件范围类型：<br/>
+									•（1,2）-大于1小于2<br/>
+									•（0,）-大于0<br/>
+									•（,0）-小于0<br/>
+									• &nbsp;[-1,1）-大于等于-1小于1<br/>
+									•（,1]&nbsp;-小于等于1<br/>
+									与或非类型：<br/>
+									• &nbsp;!{5}-不等于5<br/>
+									•（0,1)|(2,）-大于0小于1或者大于2<br/>
+									•（0,2)&(2,）-大于0小于2且大于1"<br/>
+								</div>
+							</transition>
+							<input type="text" v-model.trim="column.cself" @change="validation1" id="self" class="txt_input">
+							<div class="level_box">
+								<div class="level_label">
+									优先级
+									<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></span>
+									:
+								</div>
+								<span class="right_box">
+								<input type="checkbox" class="checkbox_input">
+								高优先级
+							</span>
+							</div>
+							<span v-show="error1" style="color:red;margin-left:10px;">输入格式不正确</span>
+						</div>
+					</div>
+					<!--设置环比值-->
+					<div class="form_section">
+						<div class="section_left">
+							<div id="dayhc">
+								日环比增加：
+							</div>
+							<div id="monthhc" style="display: none">
+								月环比增加：
+							</div>
+						</div>
+						<div class="section_right">
+							<div class="right_label">
+								值域范围
+								<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left"
+									  style="cursor:pointer;" @mouseover="showText2" @mouseout="hiddenText2"></span>
+								:
+							</div>
+							<transition name="fade">
+								<div v-show="showRule2" class="show-rule">
+									条件范围类型：<br/>
+									•（1,2）-大于1%小于2%<br/>
+									•（0,）-大于0%<br/>
+									•（,2）-小于2%<br/>
+									•  &nbsp;[1,2）-大于等于1%小于2%<br/>
+									•（1,3] &nbsp;-大于1%小于等于3%<br/>
+									与或非类型：<br/>
+									•  &nbsp;!{5}-不等于5%<br/>
+									•（0,1)|(2,）-大于0%小于1%或者大于2%<br/>
+									•（0,2)&(2,）-大于0%小于2%且大于2%<br/>
+								</div>
+							</transition>
+							<input type="text" v-model.trim="column.ch_compare" class="txt_input" @change="validation2" id="dayAdd">
+							<div class="level_box">
+								<div class="level_label">
+									优先级
+									<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></span>
+									:
+								</div>
+								<span class="right_box">
+							<input type="checkbox" class="checkbox_input">
+							高优先级
+						</span>
+							</div>
+							<span v-show="error2" style="color:red;margin-left:10px;">输入格式不正确</span>
+						</div>
+					</div>
+					<!--设置同比值-->
+					<div class="form_section">
+						<div class="section_left">
+							<div id="daytc">
+								周同比：
+							</div>
+							<div id="monthtc" style="display: none">
+								年同比：
+							</div>
+						</div>
+						<div class="section_right">
+							<div class="right_label">
+								值域范围
+								<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left"
+									  style="cursor:pointer" @mouseover="showText3" @mouseout="hiddenText3"></span>
+								:
+							</div>
+							<transition name="fade">
+								<div v-show="showRule3" class="show-rule">
+									条件范围类型：<br/>
+									•（1,2）-大于1%小于2%<br/>
+									•（0,）-大于0%<br/>
+									•（,2）-小于2%<br/>
+									•  &nbsp;[1，2）-大于等于1%小于2%<br/>
+									•（1,3] &nbsp;-大于1%小于等于3%<br/>
+									与或非类型：<br/>
+									•  &nbsp;!{5}-不等于5%<br/>
+									•（0,1)|(2,）-大于0%小于1%或者大于2%<br/>
+									•（0,2)&(2,）-大于0%小于2%且大于2%<br/>
+								</div>
+							</transition>
+							<input type="text" v-model.trim="column.ct_compare" class="txt_input" @change="validation3" id="week">
+							<div class="level_box">
+								<div class="level_label">
+									优先级
+									<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></span>
+									:
+								</div>
+								<span class="right_box">
+							<input type="checkbox" class="checkbox_input">
+							高优先级
+						</span>
+							</div>
+							<span v-show="error3" style="color:red;margin-left:10px;">输入格式不正确</span>
+						</div>
+					</div>
+
+				</div>
+				<!--=============================以上是普通类型的页面代码===========================-->
+
+				<!--<div class="form_section">-->
+					<!--<div class="section_left">-->
+						<!--报警方式：-->
+					<!--</div>-->
+					<!--<div class="section_right">-->
+						<!--<div class="right_item">-->
+							<!--<input type="checkbox"  v-model="column.calarm_type"  value="邮件" class="checkbox_input">-->
+							<!--邮件/企业微信-->
+						<!--</div>-->
+					<!--</div>-->
+				<!--</div>-->
+				<div class="form_section">
+					<div class="section_left">
+						自定义sql筛选：
+					</div>
+					<div class="section_right">
+						<input type="text" v-model="column.ccondition" placeholder="pv=? and uv=?" class="txt_input">
+					</div>
+				</div>
+
+				<div class="form_section">
+					<div class="section_left">
+						分区生成时间：
+					</div>
+					<div class="section_right" style="width:200px;">
+						<!--<input type="text" style="width:300px;" v-model="column.create_partition_time" placeholder="0（今天）/1(昨天）" class="txt_input">-->
+						<select class="form-control" v-model="columnPartitionTime">
+							<!--改默认值为1-->
+							<option>0</option>
+							<option>1</option>
+						</select>
+						<span style="margin-left:30px;color:#CFCFCF;position:relative;left:200px;bottom:34px;">0(今天）/1(昨天）</span>
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left">
+						注释：
+					</div>
+					<div class="section_right">
+						<input type="text" style="width:300px;" v-model="column.cremark"  class="txt_input">
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left">
+						负责人：
+					</div>
+					<div class="section_right">
+						<input type="text" style="width:300px;" v-model="column.cowner" readonly="readonly" class="txt_input">
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left">
+						通知标题：
+					</div>
+					<div class="section_right">
+						<input type="text" style="width:300px;" v-model="column.ccontent" class="txt_input">
+					</div>
+				</div>
+				<!--<div class="form_section">-->
+					<!--<div class="section_left">-->
+						<!--通知接收人：-->
+					<!--</div>-->
+					<!--<div class="section_right">-->
+						<!--<input type="text" style="width:300px;" placeholder="邮箱|微信（例：ly@*.com|1486）" v-model="column.creciever" class="txt_input">-->
+					<!--</div>-->
+				<!--</div>-->
+				<div class="form_section">
+					<div class="section_left">
+						报警组：
+					</div>
+					<div class="section_right">
+						<select id="selAlarmGroupId"  onchange="setChooseAlarmGroup()" class="select_component" autocomplete="off"  v-model="table.alarmUniqueid"  >
+							<option v-for="option in alarmGroups" v-bind:value="option.uniqueId" >
+								{{option.groupName}}
+							</option>
+						</select>
+						&nbsp;&nbsp;<input type="button" class="btn btn-primary" @click="queryAlarmGroupInfo" value="查看报警组详情"/>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label"></div>
+				<input type="button" class="btn btn-primary"  @click="insert" value="确定"/>
+				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+			</div>
+		</div>
+	</div>
+
+	<div id="setTable">
+		<div v-show="!showList" class="panel panel-default">
+			<div class="panel-heading">{{title}}</div>
+			<div class="form_content">
+				<div class="form_section">
+					<div class="section_left large">
+						表单级监控
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left" >
+						数据库名称：
+					</div>
+					<div class="section_right">
+						<input type="text" v-model="table.database_name"  class="txt_input">
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left" >
+						表名称：
+					</div>
+					<div class="section_right">
+						<input type="text" v-model="table.table_name"  class="txt_input">
+						&nbsp;&nbsp;<input type="button" class="btn btn-primary" @click="queryMessaget" value="查看任务信息"/>
+					</div>
+				</div>
+				<div id="selectparent" class="form_section" style="width: 999px">
+					<div class="section_left" >
+						监控类型：
+					</div>
+					<div id="selectst" class="section_right"  style="float: left" >
+						<select  id="selectt" class="select_component"   v-model="monitort" @change="controlInput">
+							<option >数据量</option>
+							<option >完成时间</option>
+							<!--<option >执行时长</option>-->
+						</select>&nbsp;
+						<!--<a type="button" style="line-height: 30px;height: 30px; background-color: #c4e3f3" @click="addselectt"><img src="../../swagger/images/1.jpg" style="line-height: 40px;height: 20px; background-color: #c4e3f3"/></a>-->
+						<select v-if="countt>1" id="select1" class="select_component"   v-model="monitort1">
+							<option >数据量</option>
+							<option >完成时间</option>
+							<!--<option >执行时长</option>-->
+						</select>&nbsp;
+						<select v-if="countt>2" id="select2" class="select_component"   v-model="monitort2">
+							<option >数据量</option>
+							<option >完成时间</option>
+							<!--<option >执行时长</option>-->
+						</select>&nbsp;
+						<select v-if="countt>3" id="select3" class="select_component"   v-model="monitort3">
+							<option >数据量</option>
+							<option >完成时间</option>
+							<!--<option >执行时长</option>-->
+						</select>&nbsp;
+					</div>
+					<!--<div style="clear: both;"></div>-->
+				</div>
+				<div v-show="showItem">
+					<!--//添加项目关系第一个###########-->
+					<div class="form_section">
+						<div class="section_left" >
+							项目模块：
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt1" onchange="setValueItemt()" class="select_component"   v-model="itemt" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select   class="select_component"   v-model="modulet" >
+								<option v-for="option in moduleNamet" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<a type="button" style="line-height: 30px;height: 30px; " @click="addmodulet"><img src="../../swagger/images/1.jpg" style="line-height: 40px;height: 20px; background-color: #c4e3f3"/></a>
+							<a type="button" style="line-height: 30px;height: 30px; " @click="deletemodulet"><img src="../../swagger/images/2.jpg" style="line-height: 20px;height: 20px; background-color: #c4e3f3"/></a>
+						</div>
+					</div>
+
+					<!--第二个项目关系-->
+					<div  v-if="countModulet>1"  class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt2" onchange="setValueItemt1()" class="select_component"   v-model="itemt1" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet1" >
+								<option v-for="option in moduleNamet1" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第三个项目关系-->
+					<div v-if="countModulet>2" class="form_section">
+						<div class="section_left" >
+
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt3" onchange="setValueItemt2()" class="select_component"   v-model="itemt2" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet2" >
+								<option v-for="option in moduleNamet2" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第四个项目关系-->
+					<div v-if="countModulet>3" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt4" onchange="setValueItemt3()" class="select_component"   v-model="itemt3" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet3" >
+								<option v-for="option in moduleNamet3" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第五个项目关系-->
+					<div v-if="countModulet>4" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt5" onchange="setValueItemt4()" class="select_component"   v-model="itemt4" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet4" >
+								<option v-for="option in moduleNamet4" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第六个项目关系-->
+					<div v-if="countModulet>5" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt6" onchange="setValueItemt5()" class="select_component"   v-model="itemt5" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet5" >
+								<option v-for="option in moduleNamet5" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第七个项目关系-->
+					<div v-if="countModulet>6" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt7" onchange="setValueItemt6()" class="select_component"   v-model="itemt6" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet6" >
+								<option v-for="option in moduleNamet6" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第八个项目关系-->
+					<div v-if="countModulet>7" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt8" onchange="setValueItemt7()" class="select_component"   v-model="itemt7" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet7" >
+								<option v-for="option in moduleNamet7" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第九个项目关系-->
+					<div v-if="countModulet>8" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt9" onchange="setValueItemt8()" class="select_component"   v-model="itemt8" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet8" >
+								<option v-for="option in moduleNamet8" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+
+					<!--第十个项目关系-->
+					<div v-if="countModulet>9" class="form_section">
+						<div class="section_left" >
+						</div>
+						<div  class="section_right" style="float: left" >
+							<select  id="seltt10" onchange="setValueItemt9()" class="select_component"   v-model="itemt9" >
+								<!--<option selected="selected" value="">请选择</option>-->
+								<option v-for="option in itemName" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+							<select  class="select_component"   v-model="modulet9" >
+								<option v-for="option in moduleNamet9" v-bind:value=" option.id" >
+									{{ option.name}}
+								</option>
+							</select>&nbsp;
+						</div>
+					</div>
+				</div>
+
+				<!--设置监控周期-->
+				<div class="form_section">
+					<div class="section_left">
+						监控周期：
+					</div>
+					<div class="section_right">
+						<select  class="select_component"  id="setCyle" onchange="setCycle()" v-model="table.partition_type" >
+							<option value="日" >日监控</option>
+							<option value="月">月监控</option>
+						</select>
+					</div>
+				</div>
+				<!--设置本身值-->
+				<div class="form_section">
+					<div class="section_left">
+						<!--<input type="checkbox" class="checkbox_input">-->
+						本身：
+					</div>
+					<div class="section_right">
+						<div class="right_label">
+							值域范围
+							<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left"
+								  style="cursor:pointer;" @mouseover="showText5" @mouseout="hiddenText5"></span>
+							:
+						</div>
+						<transition name="fade">
+							<div v-show="showRule5" class="show-rule">
+								条件范围类型：<br/>
+								•（1,2）-大于1小于2<br/>
+								•（0,）-大于0<br/>
+								•（,0）-小于0<br/>
+								• &nbsp;[-1,1）-大于等于-1小于1<br/>
+								•（,1]&nbsp;-小于等于1<br/>
+								与或非类型：<br/>
+								• &nbsp;!{5}-不等于5<br/>
+								•（0,1)|(2,）-大于0小于1或者大于2<br/>
+								•（0,2)&(2,）-大于0小于2且大于1"<br/>
+							</div>
+						</transition>
+						<input type="text" v-model.trim="table.self" class="txt_input" @change="validation5" id="self2">
+						<div class="level_box">
+							<div class="level_label">
+								优先级
+								<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></span>
+								:
+							</div>
+							<span class="right_box">
+							<input type="checkbox" class="checkbox_input">
+							高优先级
+						</span>
+						</div>
+						<span v-show="error5" style="color:red;margin-left:10px;">输入格式不正确</span>
+					</div>
+				</div>
+				<!--设置环比值-->
+				<div class="form_section">
+					<div class="section_left">
+						<div id="dayh">
+							日环比：
+						</div>
+						<div id="monthh" style="display: none">
+							月环比：
+						</div>
+					</div>
+					<div class="section_right">
+						<div class="right_label">
+							值域范围
+							<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left"
+								  style="cursor:pointer;" @mouseover="showText6" @mouseout="hiddenText6"></span>
+							:
+						</div>
+						<transition name="fade">
+							<div v-show="showRule6" class="show-rule">
+								条件范围类型：<br/>
+								•（1,2）-大于1%小于2%<br/>
+								•（0,）-大于0%<br/>
+								•（,2）-小于2%<br/>
+								•  &nbsp;[1,2）-大于等于1%小于2%<br/>
+								•（1,3] &nbsp;-大于1%小于等于3%<br/>
+								与或非类型：<br/>
+								•  &nbsp;!{5}-不等于5%<br/>
+								•（0,1)|(2,）-大于0%小于1%或者大于2%<br/>
+								•（0,2)&(2,）-大于0%小于2%且大于2%<br/>
+							</div>
+						</transition>
+						<input type="text" v-model.trim="table.h_compare" class="txt_input" @change="validation6" id="dayAdd2">
+						<div class="level_box">
+							<div class="level_label">
+								优先级
+								<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></span>
+								:
+							</div>
+							<span class="right_box">
+							<input type="checkbox" class="checkbox_input">
+							高优先级
+						</span>
+						</div>
+						<span v-show="error6" style="color:red;margin-left:10px;">输入格式不正确</span>
+					</div>
+				</div>
+				<!--设置同比值-->
+				<div class="form_section">
+					<div class="section_left">
+						<div id="dayt">
+							周同比：
+						</div>
+						<div id="montht" style="display: none">
+							年同比：
+						</div>
+					</div>
+					<div class="section_right">
+						<div class="right_label">
+							值域范围
+							<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left"
+								  style="cursor:pointer" @mouseover="showText7" @mouseout="hiddenText7"></span>
+							:
+						</div>
+						<transition name="fade">
+							<div v-show="showRule7" class="show-rule">
+								条件范围类型：<br/>
+								•（1,2）-大于1%小于2%<br/>
+								•（0,）-大于0%<br/>
+								•（,2）-小于2%<br/>
+								•  &nbsp;[1，2）-大于等于1%小于2%<br/>
+								•（1,3] &nbsp;-大于1%小于等于3%<br/>
+								与或非类型：<br/>
+								•  &nbsp;!{5}-不等于5%<br/>
+								•（0,1)|(2,）-大于0%小于1%或者大于2%<br/>
+								•（0,2)&(2,）-大于0%小于2%且大于2%<br/>
+							</div>
+						</transition>
+						<input type="text" v-model.trim="table.t_compare" class="txt_input"  @change="validation7" id="week2">
+						<div class="level_box">
+							<div class="level_label">
+								优先级
+								<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></span>
+								:
+							</div>
+							<span class="right_box">
+							<input type="checkbox" class="checkbox_input">
+							高优先级
+						</span>
+						</div>
+						<span v-show="error7" style="color:red;margin-left:10px;">输入格式不正确</span>
+					</div>
+				</div>
+
+				<div id="sevenAvg">
+					<div class="form_section">
+						<div class="section_left">
+							<!--<input type="checkbox" class="checkbox_input">-->
+							相比7天均值波动：
+						</div>
+						<div class="section_right">
+							<div class="right_label">
+								值域范围
+								<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left"
+									  style="cursor:pointer;" @mouseover="showText8" @mouseout="hiddenText8"></span>
+								:
+							</div>
+							<transition name="fade">
+								<div v-show="showRule8" class="show-rule">
+									条件范围类型：<br/>
+									•（1,2）-大于1%小于2%<br/>
+									•（0,）-大于0%<br/>
+									•（,2）-小于2%<br/>
+									•  &nbsp;[1,2）-大于等于1%小于2%<br/>
+									•（1,3] &nbsp;-大于1%小于等于3%<br/>
+									与或非类型：<br/>
+									•  &nbsp;!{5}-不等于5%<br/>
+									•（0,1)|(2,）-大于0%小于1%或者大于2%<br/>
+									•（0,2)&(2,）-大于0%小于2%且大于2%<br/>
+								</div>
+							</transition>
+							<input type="text" v-model.trim="table.seven_wave_avg" class="txt_input" @change="validation8" id="sevenDay2">
+							<div class="level_box">
+								<div class="level_label">
+									优先级
+									<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></span>
+									:
+								</div>
+								<span class="right_box">
+							<input type="checkbox" class="checkbox_input">
+							高优先级
+						</span>
+							</div>
+							<span v-show="error8" style="color:red;margin-left:10px;">输入格式不正确</span>
+						</div>
+					</div>
+				</div>
+
+				<!--<div class="form_section">-->
+					<!--<div class="section_left">-->
+						<!--报警方式：-->
+					<!--</div>-->
+					<!--<div class="section_right">-->
+						<!--<div class="right_item">-->
+							<!--<input type="checkbox" v-model="table.alarm_type" value="企业微信" class="checkbox_input">-->
+							<!--邮箱/企业微信-->
+						<!--</div>-->
+					<!--</div>-->
+				<!--</div>-->
+
+				<div class="form_section">
+					<div class="section_left">
+						自定义sql(筛选条件)：
+					</div>
+					<div class="section_right">
+						<input type="text" style="width:300px;" v-model="table.tabcondition" placeholder="pv=? and uv=? " class="txt_input">
+					</div>
+				</div>
+				<!--<div class="form_section">-->
+					<!--<div class="section_left">-->
+						<!--数据就绪时间：-->
+					<!--</div>-->
+					<!--<div class="section_right">-->
+						<!--<input type="text" v-model="table.readyTime"  class="txt_input">-->
+					<!--</div>-->
+				<!--</div>-->
+				<div class="form_section">
+					<div class="section_left">
+						分区生成时间：
+					</div>
+					<div class="section_right" style="width:200px;">
+						<!--<input type="text" style="width:300px;" v-model="table.create_partition_time" placeholder="0（今天）/1(昨天）" class="txt_input">-->
+						<select class="form-control" v-model="tablePartitionTime">
+							<!--改默认值为1-->
+							<option>0</option>
+							<option>1</option>
+						</select>
+						<span style="margin-left:30px;color:#CFCFCF;position:relative;left:200px;bottom:34px;">0(今天）/1(昨天）</span>
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left">
+						注释：
+					</div>
+					<div class="section_right">
+						<input type="text" style="width:300px;" v-model="table.remark" class="txt_input">
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left">
+						负责人：
+					</div>
+					<div class="section_right">
+						<input type="text" style="width:300px;" v-model="table.tabowner" readonly="readonly" class="txt_input">
+					</div>
+				</div>
+				<div class="form_section">
+					<div class="section_left">
+						通知标题：
+					</div>
+					<div class="section_right">
+						<input type="text"  style="width:300px;" v-model="table.content" class="txt_input">
+					</div>
+				</div>
+				<!--<div class="form_section">-->
+					<!--<div class="section_left">-->
+						<!--通知接收人：-->
+					<!--</div>-->
+					<!--<div class="section_right">-->
+						<!--<input type="text"  style="width:300px;"  v-model="table.reciever" placeholder="邮箱|微信（例：ly@*.com|1486）" class="txt_input">-->
+					<!--</div>-->
+				<!--</div>-->
+				<div class="form_section">
+					<div class="section_left">
+						报警组：
+					</div>
+					<div class="section_right">
+						<select id="selAlarmGroupId2"  onchange="setChooseAlarmGroup2()" class="select_component" autocomplete="off"  v-model="table.alarmUniqueid"  >
+							<option v-for="option in alarmGroups" v-bind:value="option.uniqueId" >
+								{{option.groupName}}
+							</option>
+						</select>
+						&nbsp;&nbsp;<input type="button" class="btn btn-primary" @click="queryAlarmGroupInfo" value="查看报警组详情"/>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label"></div>
+				<input type="button" class="btn btn-primary" @click="insertTable" value="确定"/>
+				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<script src="../../js/modules/ETLtable/ETLtable.js"></script>
+<!--<script src="js/index.js"></script>-->
+</body>
+</html>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bitauto.modules.group.dao.GroupDao">
+	<resultMap id="groupResultMap" type="com.bitauto.modules.group.entity.GroupItem">
+		<result column="id" property="id"/>
+		<result column="groups" property="groups"/>
+		<result column="itemid" property="itemId"/>
+	</resultMap>
+
+	<select id="queryGroupItemByGroup" resultType="int">
+		select itemid from group_item where groups=#{group}
+	</select>
+
+	<select id="queryAlarmGroupRelaitonByGroup" resultType="int">
+		select alarmgroupid from alarm_group_relation where groups=#{group}
+	</select>
+</mapper>

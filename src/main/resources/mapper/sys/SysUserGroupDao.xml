@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bitauto.modules.sys.dao.SysUserGroupDao">
+
+    <select id="queryUserGroup" resultType="com.bitauto.modules.sys.entity.SysUserGroupEntity">
+		select * from sys_user_group where user_id = #{value}
+	</select>
+
+    <insert id="setUserGroup" parameterType="com.bitauto.modules.sys.entity.SysUserGroupEntity">
+		insert into sys_user_group
+		(
+			`user_id`,
+			`groups`
+		)
+		values
+		(
+			#{userId},
+			#{group}
+		)
+	</insert>
+
+
+</mapper>

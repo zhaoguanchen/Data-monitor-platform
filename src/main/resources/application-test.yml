@@ -1,0 +1,59 @@
+spring:
+    datasource:
+#        type: com.alibaba.druid.pool.DruidDataSource
+#
+#        druid:
+#            first:
+#                url: jdbc:mysql://localhost:3306/bdc_fast
+#?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8
+#                username: root
+#                password: 123456
+##            second:
+            url: jdbc:mysql://192.168.15.55:3306/bdc_fast?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=converttonull
+            username: root
+            password: 123456
+            driverClassName: com.mysql.jdbc.Driver
+#            initial-size: 10
+#            max-active: 100
+#            min-idle: 10
+#            max-wait: 60000
+#            pool-prepared-statements: true
+#            max-pool-prepared-statement-per-connection-size: 20
+#            time-between-eviction-runs-millis: 60000
+#            min-evictable-idle-time-millis: 300000
+#            validation-query: SELECT 1 FROM DUAL
+#            test-while-idle: true
+#            test-on-borrow: false
+#            test-on-return: false
+#            stat-view-servlet:
+#                enabled: true
+#                url-pattern: /druid/*
+#                #login-username: admin
+#                #login-password: admin
+#            filter:
+#                stat:
+#                    log-slow-sql: true
+#                    slow-sql-millis: 1000
+#                    merge-sql: true
+#                wall:
+#                    config:
+#                        multi-statement-allow: true
+eureka:
+      client:
+        service-url:
+    #          defaultZone: http://172.20.8.122:8761/eureka/,http://172.20.8.123:8761/eureka/
+              defaultZone: http://127.0.0.1:8761/eureka/
+ribbon:
+  ReadTimeout: 60000
+  ConnectTimeout: 60000
+
+RESTAPI:
+    YU_BASE_URL: http://172.20.4.127:9820
+
+UNIFIED_ALARM_CENTER:
+    alarmGroupTag: inspectTag
+    emailTemplateId: 43
+    emailServerId: 8
+    wxTemplateId: 50
+    wxServerId: 15
+    emailSender: bdcgjxt@yiche.com

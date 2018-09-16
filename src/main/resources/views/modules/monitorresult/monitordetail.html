@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <title>统计结果详情页</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+    <style>
+        .ui-jqgrid .ui-jqgrid-view {
+            position:relative;
+            left:0;
+            top:0;
+            padding:0;
+            margin-top:20px;
+        }
+    </style>
+</head>
+<body>
+<div id="rrapp" v-cloak>
+    <div v-show="showList">
+        <table id="jqGrid" ></table>
+        <div id="jqGridPager"></div>
+    </div>
+
+    <div v-show="!showList" >
+        <table id="jqGrid1"></table>
+    </div>
+</div>
+
+<script src="../../js/modules/monitorresult/monitordetail.js"></script>
+<style>
+    .ui-jqgrid-caption { background-color:#3c8dbc; color: #fff;}
+</style>
+</body>
+</html>

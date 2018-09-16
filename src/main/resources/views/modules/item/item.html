@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+<title>定时任务</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<link rel="stylesheet" href="../../css/bootstrap.min.css">
+<link rel="stylesheet" href="../../css/font-awesome.min.css">
+<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+<link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+<link rel="stylesheet" href="../../css/main.css">
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="../../css/main/main.css">
+<script type="text/javascript" src="../../js/jquery.min.js"></script>
+<script src="../../libs/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+	<style>
+		img {
+			vertical-align: middle;
+		}
+	</style>
+</head>
+<body>
+<div id="rrapp" v-cloak>
+
+	<!--======以下是展示数据页面=====-->
+	<div v-show="showList" >
+		<div class="grid-btn" style="height:34px;">
+			<div class="form-group col-sm-2">
+				<select id="selects" class="form-control"  @change="getItemList()">
+					<option selected="selected" value="-1">请选择项目名</option>
+					<option v-for="option in itemName" v-bind:value=" option.id" >
+						{{ option.name}}
+					</option>
+				</select>
+			</div>
+			<div class="form-group col-sm-2">
+				<input type="text" class="form-control" v-model="module_name" @keyup.enter="query" placeholder="模块名"/>
+			</div>
+			<a class="btn btn-default" @click="query" style="background: #b4c5ff">查询</a>
+			<a class="btn btn-default" @click="insert" style="background: #b4c5ff">新增</a>
+			<a class="btn btn-default" @click="del" style="background: #b4c5ff">删除</a>
+			<!--<a class="btn btn-default" @click="setColumn"style="background: #b4c5ff">设置字段规则</a>-->
+		</div>
+	    <table id="jqGrid"></table>
+	    <div id="jqGridPager"></div>
+	</div>
+	<!--======以上是展示数据页面=====-->
+
+	<!--======以下是添加数据页面=====-->
+	<div v-show="showInsert" class="panel panel-default">
+		<div class="panel-heading">{{title}}</div>
+		<div class="form_content">
+			<div class="form_section">
+				<div class="section_left large">
+					添加项目模块
+				</div>
+			</div>
+			<!--第一个模块关系-->
+			<div class="form_section" >
+				<div class="section_left" >
+					已有项目模块：
+				</div>
+				<div  class="section_right"  >
+					<select  id="sel" onchange="setValueIte()"  class="txt_input" v-model="item" >
+						<option v-for="option in itemName" v-bind:value=" option.id" >
+							{{ option.name}}
+						</option>
+					</select>&nbsp;
+					<select   class="select_component"  class="txt_input" v-model="module" >
+						<option v-for="option in modulem" v-bind:value=" option.id" >
+							{{ option.name}}
+						</option>
+					</select>&nbsp;
+					</div>
+			</div>
+			<!--第一个模块-->
+			<div class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module1"/>
+					<a type="button" style="line-height: 30px;height: 30px; " @click="addmodule"><img src="../../swagger/images/1.jpg" style="line-height: 40px;height: 20px; background-color: #c4e3f3"/></a>
+					<a type="button" style="line-height: 30px;height: 30px; " @click="deletemodule"><img src="../../swagger/images/2.jpg" style="line-height: 20px;height: 20px; background-color: #c4e3f3"/></a>
+				</div>
+			</div>
+
+			<!--第二个模块-->
+			<div v-if="countModule>1" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module2"/>
+				</div>
+			</div>
+
+			<!--第三个模块-->
+			<div v-if="countModule>2" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module3"/>
+				</div>
+			</div>
+
+			<!--第四个模块-->
+			<div v-if="countModule>3" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module4"/>
+				</div>
+			</div>
+
+			<!--第五个模块-->
+			<div v-if="countModule>4" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module5"/>
+				</div>
+			</div>
+
+			<!--第六个模块-->
+			<div v-if="countModule>5" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module6"/>
+				</div>
+			</div>
+
+			<!--第七个模块-->
+			<div v-if="countModule>6" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module7"/>
+				</div>
+			</div>
+
+			<!--第八个模块-->
+			<div v-if="countModule>7" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module8"/>
+				</div>
+			</div>
+
+			<!--第九个模块-->
+			<div v-if="countModule>8" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module9"/>
+				</div>
+			</div>
+
+			<!--第十个模块-->
+			<div v-if="countModule>9" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module10"/>
+				</div>
+			</div>
+
+			<!--第十一个模块-->
+			<div v-if="countModule>10" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module11"/>
+				</div>
+			</div>
+
+			<!--第十二个模块-->
+			<div v-if="countModule>11" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module12"/>
+				</div>
+			</div>
+
+			<!--第十三个模块-->
+			<div v-if="countModule>12" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module13"/>
+				</div>
+			</div>
+
+			<!--第十四个模块-->
+			<div v-if="countModule>13" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module14"/>
+				</div>
+			</div>
+
+			<!--第十五个模块-->
+			<div v-if="countModule>14" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module15"/>
+				</div>
+			</div>
+
+			<!--第十六个模块-->
+			<div v-if="countModule>15" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module16"/>
+				</div>
+			</div>
+
+			<!--第十七个模块-->
+			<div v-if="countModule>16" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module17"/>
+				</div>
+			</div>
+
+			<!--第十八个模块-->
+			<div v-if="countModule>17" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module18"/>
+				</div>
+			</div>
+
+			<!--第十九个模块-->
+			<div v-if="countModule>18" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module19"/>
+				</div>
+			</div>
+
+			<!--第二十个模块-->
+			<div v-if="countModule>19" class="form_section" >
+				<div class="section_left" >
+					添加项目模块：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="module20"/>
+				</div>
+			</div>
+
+			<div class="form_section">
+				<div class="section_left" >
+					创建人：
+				</div>
+				<div class="section_right">
+					<input type="text" v-model="itemBody.creater"  readonly="readonly" class="txt_input">
+				</div>
+			</div>
+
+			<div class="form_section">
+				<div class="section_left" >
+					注释：
+				</div>
+				<div class="section_right">
+					<input type="text" v-model="itemBody.remark"  class="txt_input">
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-2 control-label"></div>
+			<input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+			&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+		</div>
+	</div>
+	<!--======以上是添加数据页面=====-->
+
+
+	<!--=====以下是更新数据页面====-->
+	<div v-show="showUpdate" class="panel panel-default">
+		<div class="panel-heading">{{title}}</div>
+		<div class="form_content">
+			<div class="form_section">
+				<div class="section_left large">
+					更新项目模块
+				</div>
+			</div>
+
+			<div class="form_section" >
+				<div class="section_left" >
+					已有项目模块：
+				</div>
+				<div  class="section_right">
+					<select  id="selu" onchange="setValueIteu()"  class="txt_input" v-model="itemu">
+						<option v-for="option in itemName" v-bind:value=" option.id" >
+							{{ option.name}}
+						</option>
+					</select>&nbsp;
+					<select   class="select_component"  class="txt_input" v-model="moduleu" >
+						<option v-for="option in modulemu" v-bind:value=" option.id" >
+							{{ option.name}}
+						</option>
+					</select>&nbsp;
+				</div>
+			</div>
+
+			<div class="form_section" >
+				<div class="section_left" >
+					项目名：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="itemNameu"/>
+				</div>
+			</div>
+
+			<div class="form_section" >
+				<div class="section_left" >
+					模块名：
+				</div>
+				<div  class="section_right"  >
+					<input class="txt_input" v-model="moduleNameu"/>
+				</div>
+			</div>
+
+			<div class="form_section">
+				<div class="section_left" >
+					创建人：
+				</div>
+				<div class="section_right">
+					<input type="text" v-model="itemBody.creater"  readonly="readonly" class="txt_input">
+				</div>
+			</div>
+
+			<div class="form_section">
+				<div class="section_left" >
+					注释：
+				</div>
+				<div class="section_right">
+					<input type="text" v-model="itemBody.remark"  class="txt_input">
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-2 control-label"></div>
+			<input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+			&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+		</div>
+	</div>
+	<!--=====以上是更新数据页面====-->
+</div>
+
+<script src="../../js/modules/item/item.js"></script>
+<style>
+	.ui-jqgrid .ui-jqgrid-btable tbody tr.jqgrow td {
+		overflow: hidden;
+		white-space:pre;
+		padding-right:2px;
+		vertical-align:middle;
+	}
+</style>
+<!--<script src="js/index.js"></script>-->
+</body>
+</html>

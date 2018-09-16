@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bitauto.modules.alarmgroup.dao.AlarmGroupDao">
+	<resultMap id="alarmGroupMap" type="com.bitauto.modules.alarmgroup.entity.AlarmGroup">
+		<result column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="parent_id" property="parentId"/>
+		<result column="creater" property="creater"/>
+		<result column="remark" property="remark"/>
+		<result column="statu" property="statu"/>
+		<result column="email" property="email"/>
+		<result column="job_number" property="jobNumber"/>
+	</resultMap>
+
+	<select id="queyrAllByGoup" resultMap="alarmGroupMap">
+		select * from alarm_group
+		<where> parent_id!=0 and statu=0
+			<if test="itemID!= null and itemID.trim()!= ''">
+				and parent_id =#{itemID}
+			</if>
+			<if test="module_name!=null and module_name.trim()!=''">
+				and name=#{module_name}
+			</if>
+		</where>
+		<if test="offset != null and limit != null ">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="getTotal" resultType="int">
+		select count(*) from alarm_group where parent_id=#{parentid}
+	</select>
+
+	<select id="queryAllParentGroup" resultMap="alarmGroupMap">
+		select * from alarm_group where parent_id=0
+		<if test="itemIds!=null and itemIds.size()!=0">
+			and id in
+			<foreach item="itemId" collection="itemIds" open="(" separator="," close=")">
+				#{itemId}
+			</foreach>
+		</if>
+	</select>
+
+	<select id="queryGroupById" resultMap="alarmGroupMap">
+		select * from alarm_group where id=#{id}
+	</select>
+
+	<select id="queryGroupNameById" resultType="String">
+		select name from alarm_group where id=#{id}
+	</select>
+	<update id="updateGroup" >
+		update alarm_group
+		<set>
+			<if test="name!= null">`name` = #{name},</if>
+			<if test="email!= null">`email` = #{email},</if>
+			<if test="jobNumber!= null">`job_number` = #{jobNumber},</if>
+			<if test="remark!= null">`remark` = #{remark}</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<update id="updateStatu" >
+		update alarm_group set statu=1 where id = #{id}
+	</update>
+
+	<insert id="insertGroup">
+		insert into alarm_group(name,parent_id,email,job_number,creater,remark) values(#{name},#{parentId},#{email},#{jobNumber},#{creater},#{remark})
+	</insert>
+
+	<!--<delete id="deleteTRuler" parameterType="int">-->
+	<!--delete from table_rule_db where tid in-->
+	<!--<foreach item="tid" collection="array" open="(" separator="," close=")">-->
+	<!--#{tid}-->
+	<!--</foreach>-->
+	<!--</delete>-->
+
+
+</mapper>

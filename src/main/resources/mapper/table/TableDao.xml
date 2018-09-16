@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bitauto.modules.table.dao.TableDao">
+	<resultMap id="tableResultMap" type="com.bitauto.modules.table.entity.TableRuler">
+		<!--&lt;!&ndash;//    CREATE TABLE `table_rule_db` (&ndash;&gt;-->
+		<!--&lt;!&ndash;//            `id` int(11) NOT NULL,			'表规则id'&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `monitor_type` varchar(20) NOT NULL,		//规则类型&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `tcondition` varchar(200) NOT NULL,		//过滤条件&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `table_name` varchar(100) NOT NULL,		//表名称&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `database_name` varchar(50) NOT NULL,		//数据库名称&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `h_compare` varchar(100) default NULL,	//环比值&ndash;&gt;-->
+		<!--&lt;!&ndash;//            `t_compare` varchar(100) default NULL,	//同比值&ndash;&gt;-->
+		<!--&lt;!&ndash;//            `self` varchar(100) default NULL,		//自身比&ndash;&gt;-->
+		<!--&lt;!&ndash;//            `seven_wave_avg` varchar(100) default NULL,	//7天均值&ndash;&gt;-->
+		<!--&lt;!&ndash;//            `alarm_type` varchar(20) NOT NULL,		//报警方式&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `remark` varchar(100) NOT NULL,		//注释&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `owner` varchar(50) NOT NULL,			//负责人&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `content` varchar(100) NOT NULL,		//通知内容&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `reciever` varchar(100) NOT NULL,		//接收人&ndash;&gt;-->
+		<!--&lt;!&ndash;//  `create_time` datetime NOT NULL		//创建时间&ndash;&gt;-->
+		<!--<result column="tid" property="tid"/>-->
+		<result column="tid" property="tId"/>
+		<result column="id" property="id"/>
+		<result column="number" property="number"/>
+		<result column="monitor_type" property="monitor_type"/>
+		<result column="tcondition" property="tabcondition"/>
+		<result column="table_name" property="table_name"/>
+		<result column="database_name" property="database_name"/>
+		<result column="h_compare" property="h_compare"/>
+		<result column="t_compare" property="t_compare"/>
+		<result column="self" property="self"/>
+		<result column="seven_wave_avg" property="seven_wave_avg"/>
+		<result column="alarm_type" property="alarm_type"/>
+		<result column="remark" property="remark"/>
+		<result column="towner" property="tabowner"/>
+		<result column="content" property="content"/>
+		<result column="reciever" property="reciever"/>
+		<result column="monitor_time" property="monitor_time"/>
+		<result column="username" property="username"/>
+		<result column="create_time" property="create_time"/>
+		<result column="check_day" property="create_partition_time"/>
+		<result column="partition_type" property="partition_type"/>
+		<result column="alarm_group" property="alarmGroup"/>
+		<result column="alarm_man" property="alarmman"/>
+		<result column="status" property="status"/>
+		<result column="alarm_uniqueid" property="alarmUniqueid"/>
+	</resultMap>
+	<select id="queryAllTRulers" resultMap="tableResultMap">
+		select * from table_rule_db
+		<where> 1=1
+			<if test="databaseName!= null and databaseName.trim()!= ''">
+				and database_name =#{databaseName}
+			</if>
+			<if test="tid!= null and tid.trim()!= ''">
+				and number =#{tid}
+			</if>
+			<if test="table_name!= null and table_name.trim()!= ''">
+				and table_name like concat('%', #{table_name}, '%')
+			</if>
+			<if test="towner!= null and towner.trim()!= ''">
+				and towner = #{towner}
+			</if>
+			<if test="tableid!=null">
+				and tid in
+				<foreach item="tableids" collection="tableid" open="(" separator="," close=")">
+					#{tableids}
+				</foreach>
+			</if>
+		</where>
+		order by create_time DESC
+		<if test="offset != null and limit != null ">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="queryTabOwner" resultType="String">
+		select towner from table_rule_db group by towner
+	</select>
+
+	<select id="queryTabDbName" resultType="String">
+		select database_name from table_rule_db group by database_name
+	</select>
+
+	<select id="queryIncrementID" resultType="int">
+		select id  from table_rule_db where tid=#{tid}
+	</select>
+
+	<select id="getTotal" resultType="int">
+		select count(*) from table_rule_db
+	</select>
+
+	<select id="queryTRulerById" resultMap="tableResultMap">
+		select * from table_rule_db where tid=#{tid}
+	</select>
+
+	<select id="queryTRulerBydbNameAndTableName" resultMap="tableResultMap">
+		select * from table_rule_db where table_name=#{table_name} and database_name=#{database_name}
+	</select>
+	<insert id="insertTRuler">
+	insert into table_rule_db
+	(	 tid,
+	monitor_type,
+	tcondition,
+	table_name,
+	database_name,
+	h_compare,
+	t_compare,
+	self,
+	seven_wave_avg,
+	alarm_type,
+	remark,
+	towner,
+	content,
+	reciever,
+	create_time,
+	username,
+	check_day,
+	monitor_time,
+	alarm_group,
+	alarm_man,
+	partition_type,
+	alarm_uniqueid)
+	values(
+	#{tId},
+	#{monitor_type},
+	#{tabcondition},
+	#{table_name},
+	#{database_name},
+	#{h_compare},
+	#{t_compare},
+	#{self},
+	#{seven_wave_avg},
+	#{alarm_type},
+	#{remark},
+	#{tabowner},
+	#{content},
+	#{reciever},
+	SYSDATE(),
+	#{username},
+	#{create_partition_time},
+	#{monitor_time},
+	#{alarmGroup},
+	#{alarmman},
+	#{partition_type},
+	#{alarmUniqueid})
+	</insert>
+
+	<update id="updateNumber">
+		update table_rule_db set `number`=#{number} where tid=#{tid}
+	</update>
+
+	<update id="updateTRuler" >
+	update table_rule_db
+	<set>
+	<if test="monitor_type != null">`monitor_type` = #{monitor_type}, </if>
+	<if test="tabcondition != null">`tcondition` = #{tabcondition}, </if>
+	<if test="table_name != null">`table_name` = #{table_name}, </if>
+	<if test="database_name != null">`database_name` = #{database_name}, </if>
+	<if test="h_compare != null">`h_compare` = #{h_compare}, </if>
+	<if test="t_compare != null">`t_compare` = #{t_compare},</if>
+	<if test="self != null">`self` = #{self},</if>
+	<if test="seven_wave_avg != null">`seven_wave_avg` = #{seven_wave_avg},</if>
+	<if test="alarm_type != null">`alarm_type` = #{alarm_type},</if>
+	<if test="remark != null">`remark` = #{remark},</if>
+	<if test="tabowner != null">`towner` = #{tabowner},</if>
+	<if test="content != null">`content` = #{content},</if>
+	<if test="reciever != null">`reciever` = #{reciever},</if>
+	<if test="monitor_time != null">`monitor_time` = #{monitor_time},</if>
+	<if test="create_time != null">`create_time` = #{create_time},</if>
+	<if test="partition_type != null">`partition_type` = #{partition_type},</if>
+	<if test="alarmGroup != null">`alarm_group` = #{alarmGroup},</if>
+	<if test="alarmman != null">`alarm_man` = #{alarmman},</if>
+	<if test="create_partition_time != null">`check_day` = #{create_partition_time},</if>
+  	<if test="alarmUniqueid != null">`alarm_uniqueid` = #{alarmUniqueid}</if>
+	</set>
+	where tid = #{tId}
+	</update>
+
+	<delete id="deleteTRuler" parameterType="int">
+		delete from table_rule_db where tid in
+		<foreach item="tid" collection="array" open="(" separator="," close=")">
+			#{tid}
+		</foreach>
+	</delete>
+
+	<update id="updateStatus">
+		update table_rule_db set `status`= #{status} where tid=#{tid}
+	</update>
+</mapper>
